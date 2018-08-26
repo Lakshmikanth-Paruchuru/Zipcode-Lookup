@@ -1,0 +1,20 @@
+<aura:component controller ="ziplightningtest" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+    
+    <aura:attribute name="objzip" type="Lead" />
+    <lightning:input label="Lead Name" required="true" type="text" value="{!v.objzip.Name}"/>
+    <lightning:input label="Email" type="Email" value="{!v.objzip.Email}"/>
+    
+    <lightning:input label="Phone" type="phone" value="{!v.objzip.phone}"/>
+    
+    <ui:inputText aura:id="search" label="Enter Zipcode" placeholder=""
+                  class="slds-input inputClass"
+                  labelClass="slds-form-element__label"
+                  value="" keyup="{!c.searchChange}"
+                  updateOn="keyup"
+                  required="false"/>
+    <ui:inputText class="slds-input inputClass"
+                  labelClass="slds-form-element__label" label="City" aura:Id="outputTextId" value="{!v.objzip.City}" />
+    <ui:inputText class="slds-input inputClass"
+                  labelClass="slds-form-element__label" label="State" aura:Id="outputTextId" value="{!v.objzip.State}" />
+
+</aura:component>

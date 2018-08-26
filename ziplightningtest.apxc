@@ -1,0 +1,82 @@
+public class ziplightningtest {
+    // Constructor
+    public ziplightningtest() {
+        zipValue = 0;      
+        string cityAddr = '';
+        string stateAddr = '';
+        string countryAddr = '';
+    }
+    
+    /* format from ziptasticapi.com:
+
+{"country":"US","state":"CA","city":"SAN JOSE"}
+
+*/
+    
+    // Format returned by ziptastic API
+    
+    public class ziptasticReturn {
+        string country;
+        string state;
+        string city;       
+    }
+    public class zipCodeException extends Exception {}
+    // zipValue property is used by VF page and is the zipcode entered by user
+    @AuraEnabled
+    public integer zipValue {get;set; }   
+    
+    // stateAddr is a property VF page calls to get the state corresponding to zipValue
+    @AuraEnabled
+    public string stateAddr {get; set; }
+       
+    // cityAddr is a property VF page calls to get the city corresponding to zipValue
+    @AuraEnabled
+    public string cityAddr {get; set;}
+    
+    // countryAddr is a property VF page calls to get the country corresponding to zipValue
+    @AuraEnabled
+    public string countryAddr {get;set;}   
+    
+    // Called by commandbutton on VF page to look up the zip code via REST API
+    
+    // Returns null so VF page won't navigate to a new page
+    @AuraEnabled
+    public static Lead lookup(string zippy)
+    {
+        Lead zip = new Lead();
+        string resp;
+        ziptasticReturn zipInfo;
+        
+        // Note this version of the API is only for the US
+        string endpoint ='http://ziptasticapi.com/';
+        endpoint = endpoint + zippy;
+        system.debug(LoggingLevel.Error,'zipCode.cls: calling endpoint='+endpoint);
+        HttpRequest req = new HttpRequest();
+        HttpResponse res = new HttpResponse();
+        Http http = new Http();
+        req.setMethod('GET');
+        req.setEndpoint(endpoint);
+        
+        try {
+            res = http.send(req);
+            if (res.getStatusCode() != 200) {
+                throw new zipCodeException(res.getStatus());
+                
+            }
+        } catch (zipCodeException e) {
+            system.debug(LoggingLevel.Error, 'Error HTTP response code = '+res.getStatusCode()+'; calling '+endpoint );
+            return null;
+            
+        }
+        resp = res.getBody();
+        JSONParser parser = JSON.createParser(resp);
+        parser.nextToken(); // Start object "{"
+        // This convenient method reads the JSON stream into a class in one go
+        zipInfo = (ziptasticReturn) parser.readValueAs(ziptasticReturn.class);
+        zip.State = zipInfo.state;
+        zip.City = zipInfo.city;
+        zip.Country = zipInfo.country;
+        //system.debug('City : ' + zip.cityAddr + '  State : ' + zip.stateAddr + '  Country : ' + zip.countryAddr);
+        return zip;
+    }
+}
